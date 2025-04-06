@@ -1,5 +1,7 @@
 package com.aryastefhani0140.miniproject1.ui.screen
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,6 +64,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
     var selectedToCurrency by remember { mutableStateOf("") }
     var result by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     val currencyOptions = listOf("AUD", "CNY", "EUR", "IDR", "USD", "JPY", "KRW", "SGD")
     var isFromExpanded by remember { mutableStateOf(false) }
     var isToExpanded by remember { mutableStateOf(false) }
@@ -156,6 +160,12 @@ fun ScreenContent(modifier: Modifier = Modifier) {
         }
         if (showResult) {
             Text(result, style = MaterialTheme.typography.titleLarge)
+            Button(
+                onClick = { shareResult(context, result) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.bagikan))
+            }
         }
     }
 }
@@ -224,6 +234,17 @@ private fun convertCurrency(amount: Double, from: String, to: String): Double {
 
     return amount
 }
+
+private fun shareResult(context: Context, message: String) {
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, message)
+    }
+    if (shareIntent.resolveActivity(context.packageManager) !=null) {
+        context.startActivity(shareIntent)
+    }
+}
+
 
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)

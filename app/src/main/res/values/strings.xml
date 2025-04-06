@@ -1,14 +1,13 @@
 <resources>
     <string name="app_name">ExchangeGo</string>
     <string name="app_description">ExchangeGo is a simple and fast currency conversion app, designed to help users calculate exchange rates with ease.</string>
-    <string name="jumlah_uang">"Amount"</string>
-    <string name="mata_uang_asal">Mata Uang Asal</string>
+    <string name="jumlah_uang">Amount</string>
+    <string name="mata_uang_asal">Base Currency</string>
     <string name="mata_uang_tujuan">Converted to</string>
-    <string name="konversi">Konversi</string>
-    <string name="bagikan">bagikan</string>
-    <string name="hasil_konversi">hasil_konversi</string>
-    <string name="kembali">kembali</string>
-    <string name="copyright">copyright</string>
-    <string name="tentang_aplikasi">tentang_aplikasi</string>
-
+    <string name="konversi">Convert</string>
+    <string name="bagikan">Share</string>
+    <string name="hasil_konversi">Conversion Result</string>
+    <string name="kembali">Back</string>
+    <string name="copyright">ExchangeGo is designed to help users quickly and accurately calculate currency exchange rates.\n\nCopyright © 2024–2025 Arya Stefhani Sinaga.\nAll rights reserved.</string>
+    <string name="tentang_aplikasi">About App</string>
 </resources>
