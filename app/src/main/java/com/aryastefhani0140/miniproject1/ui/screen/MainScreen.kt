@@ -2,31 +2,39 @@ package com.aryastefhani0140.miniproject1.ui.screen
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.aryastefhani0140.miniproject1.R
 import com.aryastefhani0140.miniproject1.Screen
-import com.aryastefhani0140.miniproject1.ui.theme.Miniproject1Theme
 import java.text.NumberFormat
 import java.util.Locale
+
+data class Currency(
+    val code: String,
+    val flagResId: Int
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,16 +64,42 @@ fun MainScreen(navController: NavHostController) {
     }
 }
 
+@Composable
+fun CurrencyItem(currency: Currency) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Image(
+            painter = painterResource(id = currency.flagResId),
+            contentDescription = null,
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+        )
+        Text(text = currency.code)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier) {
     var amount by remember { mutableStateOf("") }
-    var selectedFromCurrency by remember { mutableStateOf("") }
-    var selectedToCurrency by remember { mutableStateOf("") }
+    var selectedFromCurrency by remember { mutableStateOf<Currency?>(null) }
+    var selectedToCurrency by remember { mutableStateOf<Currency?>(null) }
     var result by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val currencyOptions = listOf("AUD", "CNY", "EUR", "IDR", "USD", "JPY", "KRW", "SGD")
+    val currencyOptions = listOf(
+        Currency("AUD", R.drawable.flag_aud),
+        Currency("CNY", R.drawable.flag_cny),
+        Currency("EUR", R.drawable.flag_eur),
+        Currency("IDR", R.drawable.flag_idr),
+        Currency("USD", R.drawable.flag_usd),
+        Currency("JPY", R.drawable.flag_jpy),
+        Currency("KRW", R.drawable.flag_krw),
+        Currency("SGD", R.drawable.flag_sgd)
+    )
     var isFromExpanded by remember { mutableStateOf(false) }
     var isToExpanded by remember { mutableStateOf(false) }
 
@@ -91,10 +125,22 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             onExpandedChange = { isFromExpanded = !isFromExpanded }
         ) {
             OutlinedTextField(
-                value = selectedFromCurrency,
+                value = selectedFromCurrency?.code ?: "",
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(stringResource(R.string.mata_uang_asal)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isFromExpanded) },
+                leadingIcon = selectedFromCurrency?.let {
+                    {
+                        Image(
+                            painter = painterResource(id = it.flagResId),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+                },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(
@@ -103,7 +149,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             ) {
                 currencyOptions.forEach { currency ->
                     DropdownMenuItem(
-                        text = { Text(currency) },
+                        text = { CurrencyItem(currency) },
                         onClick = {
                             selectedFromCurrency = currency
                             isFromExpanded = false
@@ -118,10 +164,22 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             onExpandedChange = { isToExpanded = !isToExpanded }
         ) {
             OutlinedTextField(
-                value = selectedToCurrency,
+                value = selectedToCurrency?.code ?: "",
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(stringResource(R.string.mata_uang_tujuan)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isToExpanded) },
+                leadingIcon = selectedToCurrency?.let {
+                    {
+                        Image(
+                            painter = painterResource(id = it.flagResId),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+                },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(
@@ -130,7 +188,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             ) {
                 currencyOptions.forEach { currency ->
                     DropdownMenuItem(
-                        text = { Text(currency) },
+                        text = { CurrencyItem(currency) },
                         onClick = {
                             selectedToCurrency = currency
                             isToExpanded = false
@@ -142,15 +200,18 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                if (amount.isNotEmpty() && selectedFromCurrency.isNotEmpty() && selectedToCurrency.isNotEmpty()) {
+                if (amount.isNotEmpty() && selectedFromCurrency != null && selectedToCurrency != null) {
                     val inputAmount = amount.toDoubleOrNull() ?: 0.0
-                    val convertedAmount = convertCurrency(inputAmount, selectedFromCurrency, selectedToCurrency)
+                    val convertedAmount = convertCurrency(
+                        inputAmount,
+                        selectedFromCurrency!!.code,
+                        selectedToCurrency!!.code
+                    )
 
-                    val formattedInputAmount = formatCurrencyValue(inputAmount, selectedFromCurrency)
+                    val formattedInputAmount = formatCurrencyValue(inputAmount, selectedFromCurrency!!.code)
+                    val formattedConvertedAmount = formatCurrencyValue(convertedAmount, selectedToCurrency!!.code)
 
-                    val formattedConvertedAmount = formatCurrencyValue(convertedAmount, selectedToCurrency)
-
-                    result = "$formattedInputAmount $selectedFromCurrency = $formattedConvertedAmount $selectedToCurrency"
+                    result = "$formattedInputAmount ${selectedFromCurrency!!.code} = $formattedConvertedAmount ${selectedToCurrency!!.code}"
                     showResult = true
                 }
             },
@@ -240,17 +301,7 @@ private fun shareResult(context: Context, message: String) {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, message)
     }
-    if (shareIntent.resolveActivity(context.packageManager) !=null) {
+    if (shareIntent.resolveActivity(context.packageManager) != null) {
         context.startActivity(shareIntent)
-    }
-}
-
-
-@Preview(showBackground = true)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    Miniproject1Theme {
-        MainScreen(rememberNavController())
     }
 }

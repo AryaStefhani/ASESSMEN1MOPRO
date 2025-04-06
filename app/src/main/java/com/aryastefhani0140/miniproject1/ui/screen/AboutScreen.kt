@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.aryastefhani0140.miniproject1.R
 import com.aryastefhani0140.miniproject1.ui.theme.Miniproject1Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,12 +32,12 @@ fun AboutScreen(navController: NavHostController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(com.aryastefhani0140.miniproject1.R.string.kembali),
+                            contentDescription = stringResource(R.string.kembali),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
-                title = { Text(text = stringResource(com.aryastefhani0140.miniproject1.R.string.tentang_aplikasi)) },
+                title = { Text(text = stringResource(R.string.tentang_aplikasi)) },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -45,11 +46,12 @@ fun AboutScreen(navController: NavHostController) {
         }
     ) { innerPadding ->
         Text(
-            text = stringResource(com.aryastefhani0140.miniproject1.R.string.copyright),
+            text = stringResource(R.string.copyright),
             modifier = Modifier.padding(innerPadding).padding(16.dp)
         )
     }
 }
+
 
 
 @Preview(showBackground = true)
