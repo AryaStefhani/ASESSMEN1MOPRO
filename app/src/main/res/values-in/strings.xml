@@ -10,4 +10,8 @@
     <string name="tentang_aplikasi">Tentang Aplikasi</string>
     <string name="kembali">Kembali</string>
     <string name="copyright">ExchangeGo dibuat untuk membantu pengguna dalam menghitung nilai tukar mata uang secara cepat dan akurat.\n\nCopyright © 2024–2025 Arya Stefhani Sinaga.\nAll rights reserved</string>
+    <string name="empty_amount">Masukkan Jumlah Uang</string>
+    <string name="invalid_format">Gunakan (.) untuk desimal</string>
+    <string name="currency_from">Pilih Mata Uang Asal</string>
+    <string name="currency_to">Pilih Mata Uang Tujuan</string>
 </resources>

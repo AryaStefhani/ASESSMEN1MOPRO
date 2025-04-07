@@ -2,6 +2,7 @@ package com.aryastefhani0140.miniproject1.ui.screen
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -24,17 +26,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.aryastefhani0140.miniproject1.R
 import com.aryastefhani0140.miniproject1.Screen
+import com.aryastefhani0140.miniproject1.model.Flag
+import com.aryastefhani0140.miniproject1.ui.theme.Miniproject1Theme
 import java.text.NumberFormat
 import java.util.Locale
-
-data class Currency(
-    val code: String,
-    val flagResId: Int
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,19 +67,19 @@ fun MainScreen(navController: NavHostController) {
 }
 
 @Composable
-fun CurrencyItem(currency: Currency) {
+fun CurrencyItem(flag: Flag) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Image(
-            painter = painterResource(id = currency.flagResId),
+            painter = painterResource(id = flag.imageResId),
             contentDescription = null,
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
         )
-        Text(text = currency.code)
+        Text(text = flag.code)
     }
 }
 
@@ -85,20 +87,32 @@ fun CurrencyItem(currency: Currency) {
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier) {
     var amount by remember { mutableStateOf("") }
-    var selectedFromCurrency by remember { mutableStateOf<Currency?>(null) }
-    var selectedToCurrency by remember { mutableStateOf<Currency?>(null) }
+    var selectedFromCurrency by remember { mutableStateOf<Flag?>(null) }
+    var selectedToCurrency by remember { mutableStateOf<Flag?>(null) }
     var result by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
+
+    // Error states
+    var amountError by remember { mutableStateOf<String?>(null) }
+    var fromCurrencyError by remember { mutableStateOf<String?>(null) }
+    var toCurrencyError by remember { mutableStateOf<String?>(null) }
+
     val context = LocalContext.current
+
+    val errorEmptyAmount = stringResource(R.string.empty_amount)
+    val errorInvalidFormat = stringResource(R.string.invalid_format)
+    val errorCurrencyFrom = stringResource(R.string.currency_from)
+    val errorCurrencyTo = stringResource(R.string.currency_to)
+
     val currencyOptions = listOf(
-        Currency("AUD", R.drawable.flag_aud),
-        Currency("CNY", R.drawable.flag_cny),
-        Currency("EUR", R.drawable.flag_eur),
-        Currency("IDR", R.drawable.flag_idr),
-        Currency("USD", R.drawable.flag_usd),
-        Currency("JPY", R.drawable.flag_jpy),
-        Currency("KRW", R.drawable.flag_krw),
-        Currency("SGD", R.drawable.flag_sgd)
+        Flag("AUD", R.drawable.flag_aud),
+        Flag("CNY", R.drawable.flag_cny),
+        Flag("EUR", R.drawable.flag_eur),
+        Flag("IDR", R.drawable.flag_idr),
+        Flag("USD", R.drawable.flag_usd),
+        Flag("JPY", R.drawable.flag_jpy),
+        Flag("KRW", R.drawable.flag_krw),
+        Flag("SGD", R.drawable.flag_sgd)
     )
     var isFromExpanded by remember { mutableStateOf(false) }
     var isToExpanded by remember { mutableStateOf(false) }
@@ -111,18 +125,33 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
         TextField(
             value = amount,
-            onValueChange = { amount = it },
+            onValueChange = {
+                amountError = null
+
+                if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                    amount = it
+                }
+            },
             label = { Text(stringResource(R.string.jumlah_uang)) },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = amountError != null,
+            supportingText = {
+                amountError?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+            }
         )
 
         ExposedDropdownMenuBox(
             expanded = isFromExpanded,
-            onExpandedChange = { isFromExpanded = !isFromExpanded }
+            onExpandedChange = {
+                isFromExpanded = !isFromExpanded
+                fromCurrencyError = null
+            }
         ) {
             OutlinedTextField(
                 value = selectedFromCurrency?.code ?: "",
@@ -133,7 +162,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 leadingIcon = selectedFromCurrency?.let {
                     {
                         Image(
-                            painter = painterResource(id = it.flagResId),
+                            painter = painterResource(id = it.imageResId),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(24.dp)
@@ -141,7 +170,13 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                         )
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                isError = fromCurrencyError != null,
+                supportingText = {
+                    fromCurrencyError?.let {
+                        Text(text = it, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             )
             ExposedDropdownMenu(
                 expanded = isFromExpanded,
@@ -153,6 +188,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                         onClick = {
                             selectedFromCurrency = currency
                             isFromExpanded = false
+                            fromCurrencyError = null
                         }
                     )
                 }
@@ -161,7 +197,10 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
         ExposedDropdownMenuBox(
             expanded = isToExpanded,
-            onExpandedChange = { isToExpanded = !isToExpanded }
+            onExpandedChange = {
+                isToExpanded = !isToExpanded
+                toCurrencyError = null
+            }
         ) {
             OutlinedTextField(
                 value = selectedToCurrency?.code ?: "",
@@ -172,15 +211,19 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 leadingIcon = selectedToCurrency?.let {
                     {
                         Image(
-                            painter = painterResource(id = it.flagResId),
+                            painter = painterResource(id = it.imageResId),
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
+                            modifier = Modifier.size(24.dp).clip(CircleShape)
                         )
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                isError = toCurrencyError != null,
+                supportingText = {
+                    toCurrencyError?.let {
+                        Text(text = it, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             )
             ExposedDropdownMenu(
                 expanded = isToExpanded,
@@ -192,40 +235,85 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                         onClick = {
                             selectedToCurrency = currency
                             isToExpanded = false
+                            toCurrencyError = null
                         }
                     )
                 }
             }
         }
 
-        Button(
-            onClick = {
-                if (amount.isNotEmpty() && selectedFromCurrency != null && selectedToCurrency != null) {
-                    val inputAmount = amount.toDoubleOrNull() ?: 0.0
-                    val convertedAmount = convertCurrency(
-                        inputAmount,
-                        selectedFromCurrency!!.code,
-                        selectedToCurrency!!.code
-                    )
-
-                    val formattedInputAmount = formatCurrencyValue(inputAmount, selectedFromCurrency!!.code)
-                    val formattedConvertedAmount = formatCurrencyValue(convertedAmount, selectedToCurrency!!.code)
-
-                    result = "$formattedInputAmount ${selectedFromCurrency!!.code} = $formattedConvertedAmount ${selectedToCurrency!!.code}"
-                    showResult = true
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(stringResource(R.string.konversi))
-        }
-        if (showResult) {
-            Text(result, style = MaterialTheme.typography.titleLarge)
             Button(
-                onClick = { shareResult(context, result) },
-                modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    amountError = null
+                    fromCurrencyError = null
+                    toCurrencyError = null
+
+                    var isValid = true
+
+                    if (amount.isEmpty()) {
+                        amountError = errorEmptyAmount
+                        isValid = false
+                    }
+                    else if (amount.contains(',')) {
+                        amountError = errorInvalidFormat
+                        isValid = false
+                    }
+
+                    if (selectedFromCurrency == null) {
+                        fromCurrencyError = errorCurrencyFrom
+                        isValid = false
+                    }
+
+                    if (selectedToCurrency == null) {
+                        toCurrencyError = errorCurrencyTo
+                        isValid = false
+                    }
+
+                    if (isValid) {
+                        val inputAmount = amount.toDoubleOrNull() ?: 0.0
+                        val convertedAmount = convertCurrency(
+                            inputAmount,
+                            selectedFromCurrency!!.code,
+                            selectedToCurrency!!.code
+                        )
+
+                        val formattedInputAmount = formatCurrencyValue(inputAmount, selectedFromCurrency!!.code)
+                        val formattedConvertedAmount = formatCurrencyValue(convertedAmount, selectedToCurrency!!.code)
+
+                        result = "$formattedInputAmount ${selectedFromCurrency!!.code} = $formattedConvertedAmount ${selectedToCurrency!!.code}"
+                        showResult = true
+                    } else {
+                        showResult = false
+                    }
+                },
+                modifier = Modifier.width(200.dp)
             ) {
-                Text(stringResource(R.string.bagikan))
+                Text(stringResource(R.string.konversi))
+            }
+        }
+
+        if (showResult) {
+            Text(
+                text = result,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = { shareResult(context, result) },
+                    modifier = Modifier.width(150.dp)
+                ) {
+                    Text(stringResource(R.string.bagikan))
+                }
             }
         }
     }
@@ -239,7 +327,6 @@ private fun formatCurrencyValue(value: Double, currencyCode: String): String {
     } else {
         formatter.maximumFractionDigits = 2
     }
-
     return formatter.format(value)
 }
 
@@ -303,5 +390,14 @@ private fun shareResult(context: Context, message: String) {
     }
     if (shareIntent.resolveActivity(context.packageManager) != null) {
         context.startActivity(shareIntent)
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    Miniproject1Theme {
+        MainScreen(rememberNavController())
     }
 }
