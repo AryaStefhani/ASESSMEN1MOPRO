@@ -6,11 +6,10 @@
     <string name="mata_uang_tujuan">Converted to</string>
     <string name="konversi">Convert</string>
     <string name="bagikan">Share</string>
-    <string name="hasil_konversi">Conversion Result</string>
+    <string name="hasil_konversi">1 %1$s = %2$,.2f %3$s</string>
     <string name="kembali">Back</string>
     <string name="copyright">ExchangeGo is designed to help users quickly and accurately calculate currency exchange rates.\n\nCopyright © 2024–2025 Arya Stefhani Sinaga.\nAll rights reserved.</string>
     <string name="tentang_aplikasi">About App</string>
-
     <string name="empty_amount">Please enter an amount</string>
     <string name="invalid_format">Please use period (.) as decimal separator, not comma</string>
     <string name="currency_from">Please select base currency</string>
