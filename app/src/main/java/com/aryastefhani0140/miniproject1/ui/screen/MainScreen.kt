@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.aryastefhani0140.miniproject1.R
@@ -37,6 +40,7 @@ import com.aryastefhani0140.miniproject1.model.Flag
 import com.aryastefhani0140.miniproject1.ui.theme.Miniproject1Theme
 import java.text.NumberFormat
 import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +122,10 @@ fun ScreenContent(modifier: Modifier = Modifier) {
     var isToExpanded by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(text = stringResource(R.string.app_description))
@@ -170,7 +177,8 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                         )
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth().onGloballyPositioned {},
                 isError = fromCurrencyError != null,
                 supportingText = {
                     fromCurrencyError?.let {
@@ -217,7 +225,8 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                         )
                     }
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth().onGloballyPositioned {},
                 isError = toCurrencyError != null,
                 supportingText = {
                     toCurrencyError?.let {
