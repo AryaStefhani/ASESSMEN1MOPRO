@@ -4,16 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,7 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.aryastefhani0140.miniproject1.R
@@ -41,7 +35,49 @@ import com.aryastefhani0140.miniproject1.ui.theme.Miniproject1Theme
 import java.text.NumberFormat
 import java.util.Locale
 
+@Composable
+fun CurrencyCarousel(modifier: Modifier = Modifier) {
+    val currencyOptions = listOf(
+        Flag("USD", R.drawable.usd_1),
+        Flag("IDR", R.drawable.idr_1),
+        Flag("EUR", R.drawable.eur_1),
+        Flag("JPY", R.drawable.jpy_1),
+        Flag("AUD", R.drawable.aud_1),
+        Flag("CNY", R.drawable.cny_1),
+        Flag("KRW", R.drawable.krw_1),
+        Flag("SGD", R.drawable.sgd_1)
+    )
 
+    var currentCurrencyIndex by remember { mutableIntStateOf(0) }
+    val currentCurrency = currencyOptions[currentCurrencyIndex]
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = currentCurrency.imageResId),
+            contentDescription = "${currentCurrency.code} currency",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(165.dp)
+        )
+        Text(
+            text = currentCurrency.code,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 2.dp)
+        )
+        Button(
+            onClick = {
+                currentCurrencyIndex = (currentCurrencyIndex + 1) % currencyOptions.size
+            },
+            modifier = Modifier.width(200.dp).padding(top = 4.dp)
+        ) {
+            Text(text = stringResource(R.string.lanjut))
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavHostController) {
@@ -74,20 +110,20 @@ fun MainScreen(navController: NavHostController) {
 fun CurrencyItem(flag: Flag) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp) // Jarak sedikit diperbesar
     ) {
         Image(
             painter = painterResource(id = flag.imageResId),
             contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
+            modifier = Modifier.size(28.dp).clip(CircleShape)
         )
-        Text(text = flag.code)
+        Text(
+            text = flag.code,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier) {
     var amount by remember { mutableStateOf("") }
@@ -96,7 +132,6 @@ fun ScreenContent(modifier: Modifier = Modifier) {
     var result by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
 
-    // Error states
     var amountError by remember { mutableStateOf<String?>(null) }
     var fromCurrencyError by remember { mutableStateOf<String?>(null) }
     var toCurrencyError by remember { mutableStateOf<String?>(null) }
@@ -118,213 +153,269 @@ fun ScreenContent(modifier: Modifier = Modifier) {
         Flag("KRW", R.drawable.flag_krw),
         Flag("SGD", R.drawable.flag_sgd)
     )
+
     var isFromExpanded by remember { mutableStateOf(false) }
     var isToExpanded by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(text = stringResource(R.string.app_description))
-
-        TextField(
-            value = amount,
-            onValueChange = {
-                amountError = null
-
-                if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*$"))) {
-                    amount = it
-                }
-            },
-            label = { Text(stringResource(R.string.jumlah_uang)) },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            isError = amountError != null,
-            supportingText = {
-                amountError?.let {
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
-                }
-            }
+        Text(
+            text = stringResource(R.string.app_description),
+            modifier = Modifier.padding(vertical = 8.dp),
+            style = MaterialTheme.typography.bodyLarge
         )
 
-        ExposedDropdownMenuBox(
-            expanded = isFromExpanded,
-            onExpandedChange = {
-                isFromExpanded = !isFromExpanded
-                fromCurrencyError = null
-            }
+        CurrencyCarousel()
+        Card(
+            elevation = CardDefaults.cardElevation(4.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
-            OutlinedTextField(
-                value = selectedFromCurrency?.code ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.mata_uang_asal)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isFromExpanded) },
-                leadingIcon = selectedFromCurrency?.let {
-                    {
-                        Image(
-                            painter = painterResource(id = it.imageResId),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                TextField(
+                    value = amount,
+                    onValueChange = {
+                        amountError = null
+                        if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            amount = it
+                        }
+                    },
+                    label = { Text(stringResource(R.string.jumlah_uang)) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = amountError != null,
+                    supportingText = {
+                        amountError?.let {
+                            Text(text = it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                )
+
+                Column {
+                    Text(
+                        text = stringResource(R.string.mata_uang_asal),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { isFromExpanded = true }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                selectedFromCurrency?.let {
+                                    Image(
+                                        painter = painterResource(id = it.imageResId),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                    )
+                                }
+                                Text(
+                                    text = selectedFromCurrency?.code ?: stringResource(R.string.mata_uang_asal),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Dropdown"
+                            )
+                        }
+                    }
+
+                    if (fromCurrencyError != null) {
+                        Text(
+                            text = fromCurrencyError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                         )
                     }
-                },
-                modifier = Modifier
-                    .fillMaxWidth().onGloballyPositioned {},
-                isError = fromCurrencyError != null,
-                supportingText = {
-                    fromCurrencyError?.let {
-                        Text(text = it, color = MaterialTheme.colorScheme.error)
+
+                    DropdownMenu(
+                        expanded = isFromExpanded,
+                        onDismissRequest = { isFromExpanded = false },
+                        modifier = Modifier.fillMaxWidth(0.9f)
+                    ) {
+                        currencyOptions.forEach { currency ->
+                            DropdownMenuItem(
+                                text = { CurrencyItem(currency) },
+                                onClick = {
+                                    selectedFromCurrency = currency
+                                    isFromExpanded = false
+                                    fromCurrencyError = null
+                                }
+                            )
+                        }
                     }
                 }
-            )
-            ExposedDropdownMenu(
-                expanded = isFromExpanded,
-                onDismissRequest = { isFromExpanded = false }
-            ) {
-                currencyOptions.forEach { currency ->
-                    DropdownMenuItem(
-                        text = { CurrencyItem(currency) },
+
+                Column {
+                    Text(
+                        text = stringResource(R.string.mata_uang_tujuan),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { isToExpanded = true }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                selectedToCurrency?.let {
+                                    Image(
+                                        painter = painterResource(id = it.imageResId),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(28.dp).clip(CircleShape)
+                                    )
+                                }
+                                Text(
+                                    text = selectedToCurrency?.code ?: stringResource(R.string.mata_uang_tujuan),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Dropdown"
+                            )
+                        }
+                    }
+
+                    if (toCurrencyError != null) {
+                        Text(
+                            text = toCurrencyError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = isToExpanded,
+                        onDismissRequest = { isToExpanded = false },
+                        modifier = Modifier.fillMaxWidth(0.9f)
+                    ) {
+                        currencyOptions.forEach { currency ->
+                            DropdownMenuItem(
+                                text = { CurrencyItem(currency) },
+                                onClick = {
+                                    selectedToCurrency = currency
+                                    isToExpanded = false
+                                    toCurrencyError = null
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
                         onClick = {
-                            selectedFromCurrency = currency
-                            isFromExpanded = false
+                            amountError = null
                             fromCurrencyError = null
-                        }
-                    )
-                }
-            }
-        }
-
-        ExposedDropdownMenuBox(
-            expanded = isToExpanded,
-            onExpandedChange = {
-                isToExpanded = !isToExpanded
-                toCurrencyError = null
-            }
-        ) {
-            OutlinedTextField(
-                value = selectedToCurrency?.code ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.mata_uang_tujuan)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isToExpanded) },
-                leadingIcon = selectedToCurrency?.let {
-                    {
-                        Image(
-                            painter = painterResource(id = it.imageResId),
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp).clip(CircleShape)
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth().onGloballyPositioned {},
-                isError = toCurrencyError != null,
-                supportingText = {
-                    toCurrencyError?.let {
-                        Text(text = it, color = MaterialTheme.colorScheme.error)
-                    }
-                }
-            )
-            ExposedDropdownMenu(
-                expanded = isToExpanded,
-                onDismissRequest = { isToExpanded = false }
-            ) {
-                currencyOptions.forEach { currency ->
-                    DropdownMenuItem(
-                        text = { CurrencyItem(currency) },
-                        onClick = {
-                            selectedToCurrency = currency
-                            isToExpanded = false
                             toCurrencyError = null
-                        }
-                    )
+
+                            var isValid = true
+
+                            if (amount.isEmpty()) {
+                                amountError = errorEmptyAmount
+                                isValid = false
+                            }
+                            else if (amount.contains(',')) {
+                                amountError = errorInvalidFormat
+                                isValid = false
+                            }
+
+                            if (selectedFromCurrency == null) {
+                                fromCurrencyError = errorCurrencyFrom
+                                isValid = false
+                            }
+
+                            if (selectedToCurrency == null) {
+                                toCurrencyError = errorCurrencyTo
+                                isValid = false
+                            }
+
+                            if (isValid) {
+                                val inputAmount = amount.toDoubleOrNull() ?: 0.0
+                                val convertedAmount = convertCurrency(
+                                    inputAmount,
+                                    selectedFromCurrency!!.code,
+                                    selectedToCurrency!!.code
+                                )
+
+                                val formattedInputAmount = formatCurrencyValue(inputAmount, selectedFromCurrency!!.code)
+                                val formattedConvertedAmount = formatCurrencyValue(convertedAmount, selectedToCurrency!!.code)
+
+                                result = "$formattedInputAmount ${selectedFromCurrency!!.code} = $formattedConvertedAmount ${selectedToCurrency!!.code}"
+                                showResult = true
+                            } else {
+                                showResult = false
+                            }
+                        },
+                        modifier = Modifier.width(220.dp).height(48.dp)
+                    ) {
+                        Text(stringResource(R.string.konversi))
+                    }
                 }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Button(
-                onClick = {
-                    amountError = null
-                    fromCurrencyError = null
-                    toCurrencyError = null
-
-                    var isValid = true
-
-                    if (amount.isEmpty()) {
-                        amountError = errorEmptyAmount
-                        isValid = false
-                    }
-                    else if (amount.contains(',')) {
-                        amountError = errorInvalidFormat
-                        isValid = false
-                    }
-
-                    if (selectedFromCurrency == null) {
-                        fromCurrencyError = errorCurrencyFrom
-                        isValid = false
-                    }
-
-                    if (selectedToCurrency == null) {
-                        toCurrencyError = errorCurrencyTo
-                        isValid = false
-                    }
-
-                    if (isValid) {
-                        val inputAmount = amount.toDoubleOrNull() ?: 0.0
-                        val convertedAmount = convertCurrency(
-                            inputAmount,
-                            selectedFromCurrency!!.code,
-                            selectedToCurrency!!.code
-                        )
-
-                        val formattedInputAmount = formatCurrencyValue(inputAmount, selectedFromCurrency!!.code)
-                        val formattedConvertedAmount = formatCurrencyValue(convertedAmount, selectedToCurrency!!.code)
-
-                        result = "$formattedInputAmount ${selectedFromCurrency!!.code} = $formattedConvertedAmount ${selectedToCurrency!!.code}"
-                        showResult = true
-                    } else {
-                        showResult = false
-                    }
-                },
-                modifier = Modifier.width(200.dp)
-            ) {
-                Text(stringResource(R.string.konversi))
             }
         }
 
         if (showResult) {
-            Text(
-                text = result,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+            Card(
+                elevation = CardDefaults.cardElevation(4.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             ) {
-                Button(
-                    onClick = { shareResult(context, result) },
-                    modifier = Modifier.width(150.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(stringResource(R.string.bagikan))
+                    Text(
+                        text = result,
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Button(
+                        onClick = { shareResult(context, result) },
+                        modifier = Modifier.width(160.dp).height(48.dp)
+                    ) {
+                        Text(stringResource(R.string.bagikan))
+                    }
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

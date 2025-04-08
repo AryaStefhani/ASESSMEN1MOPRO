@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">ExchangeGo</string>
     <string name="app_description">ExchangeGo adalah aplikasi konversi mata uang yang sederhana dan cepat, dirancang untuk membantu pengguna menghitung nilai tukar dengan mudah.</string>
+    <string name="lanjut">lanjut</string>
     <string name="jumlah_uang">Jumlah Uang</string>
     <string name="mata_uang_asal">Mata Uang Asal</string>
     <string name="mata_uang_tujuan">Mata Uang Tujuan</string>
